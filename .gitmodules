@@ -1,0 +1,3 @@
+[submodule "themes/moefox"]
+	path = themes/moefox
+	url = git@github.com:nidhoggfgg/hugo-moefox.git

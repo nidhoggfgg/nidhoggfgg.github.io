@@ -1,0 +1,32 @@
+baseURL = "https://blog.nidhoggfgg.fun"
+languageCode = "zh-cn"
+title = "nidhoggfgg's blog"
+theme = "moefox"
+Paginate = 5
+defaultContentLanguage = "zh-cn"
+
+[permalinks]
+    posts = "/post/:slug"
+    page = "/:slug"
+
+[params]
+    mainSections = ["posts", "docs"]
+
+[languages]
+    [languages.en]
+        languageName = "English"
+        title = ""
+        weight = 2
+
+    [languages.zh-cn]
+        languageName = "中文"
+        title = ""
+        weight = 1
+
+[markup.highlight]
+    style = "dracula"
+    lineNos = true
+    lineNumbersInTable = true
+    tabWidth = 4
+    guessSyntax = true
+    noClasses = false

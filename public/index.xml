@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title></title>
+    <link>https://blog.nidhoggfgg.fun/</link>
+    <description>Recent content on </description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 06 May 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://blog.nidhoggfgg.fun/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>归档</title>
+      <link>https://blog.nidhoggfgg.fun/%E5%BD%92%E6%A1%A3/</link>
+      <pubDate>Fri, 06 May 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.nidhoggfgg.fun/%E5%BD%92%E6%A1%A3/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>搜索</title>
+      <link>https://blog.nidhoggfgg.fun/%E6%90%9C%E7%B4%A2/</link>
+      <pubDate>Fri, 06 May 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.nidhoggfgg.fun/%E6%90%9C%E7%B4%A2/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>抓包分析今日校园</title>
+      <link>https://blog.nidhoggfgg.fun/post/f35f3418/</link>
+      <pubDate>Fri, 27 Aug 2021 13:27:44 +0800</pubDate>
+      
+      <guid>https://blog.nidhoggfgg.fun/post/f35f3418/</guid>
+      <description>抓包环境 我抓包的环境是 Android 10 真机 + magisk + LSPosed，这样的选择也是无奈之举，缺一不可。
+magisk —— 自从 Android 7.0 开始，系统不再信任用户证书，所以我们需要写入系统证书，这需要 system 可写，一般有 root 就差不多了。 到了 Android 11，管得更紧了，system 不能写了，得要 magisk 模块才能写入我们自己的证书。 要抓 https ，导入抓包工具生成的证书是必不可少的。
+LSPosed —— 今日校园采用了单向认证的方式来防止抓包，简单点来说就是客户端会校验服务器证书，于是需要一个 xposed 模块来 hook 掉，然后去掉这个校验。 而目前感觉在高版本的安卓上能用上 xposed 并且影响不大的估计就只有 LSPosed 了。 想要抓到关键数据，去除证书校验是必不可少的。
+假如是双向校验，同时很难逆向 app ，不妨换个思路，想办法搞到 app 里面的证书然后导入到你所选用的抓包工具中。
+而抓出 app 里面的证书，一般只需要解包 app ，查一下资源，没有就去 dex 里面翻一下，也可能在 jni 层里面，一般来说都是一串很长的字符串一样的，比较容易找到，也不需要什么逆向的技术。
+假如不能直接找到，但是 so 里面上万的函数，很明显，开发者有意为止，知难而退，不能不知好歹。
+ 当然，也可以选择模拟器，我一般没用模拟器，用的话也只是用一下 VMOS pro，这方面我没有推荐的，都没用过。 pc 上的模拟器或许也不错。
+抓包工具 抓包工具我选择的是 burpsuite pro，我笔记本上唯一的抓包工具。
+不过我最先开始抓包的时候，是在手机上使用 httpcanary 抓的包，觉得还有很多地方值得测试一下，才开始用 burp 抓包。</description>
+    </item>
+    
+  </channel>
+</rss>
