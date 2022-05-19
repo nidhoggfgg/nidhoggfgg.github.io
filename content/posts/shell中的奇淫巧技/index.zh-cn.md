@@ -7,7 +7,7 @@ slug: 8ca21edd
 
 ## 前言
 
-本文所有内容均在 bash 下进行，并且所说的 shell 都是指 bash，可能有一部分内容在 zsh 不起作用 \
+本文所有内容均在 bash 下进行，并且所说的 shell 都是指 bash，可能有一部分内容在 zsh 不起作用(不起作用时会指出) \
 文中所用到的 a 目录内容如下
 
 ```
@@ -23,6 +23,8 @@ a
     ├── .emmm
     └── emmm
 ```
+
+并且其中尽可能是 shell 的功能，而非某一个软件包所实现的功能
 
 ## 奇淫巧技
 
@@ -277,7 +279,7 @@ mv content/post/abc/img/xyz.png content/post/abc/img/abc.png
 mv content/post/abc/img/{xyz,abc}.png
 ```
 
-当然，同样的方法可以利用在复制文件等等这些操作上，非常快.
+当然，同样的方法可以利用在复制文件，修改后缀等等这些操作上，非常快.
 
 ### 强制写入
 
@@ -321,6 +323,10 @@ shift 可以多次调用，每次都是移除一个参数，也可以传入一�
 将字符串写入文件再进行操作？这样好麻烦啊，实际上不用担心，因为有 <<< \
 拿 md5sum 来说，它接受文件名作为参数，实际上使用 `md5sum <<< string` 即可
 
+{{< notice tip >}}
+`echo "string" | md5sum` 也是一样的，还更加实用一些(不用思考)
+{{< /notice >}}
+
 ### 参数终止
 
 当目录下有个名为 -l 的目录时应该如何输出 -l 目录下的文件？ \
@@ -337,5 +343,98 @@ ls $a
 
 {{< notice tip >}}
 这个例子可能并不好，毕竟使用 `ls ./-l` 就好了. 但在其他情况下，会有用到的时候，比如目标不是一个文件. \
--- 对 echo 无效
+-\- 对 echo 无效
 {{< /notice >}}
+
+### 快速上一条指令
+
+使用方向键来填充上一条指令是不错的选择。\
+拥有同样效果的还有 !! 和 r，使用起来也很方便。 \
+比如:
+```bash
+apt install vim # wrong! 非 root 用户无权执行
+sudo !! # fine! 等价于 sudo apt install vim
+```
+
+{{< notice tip >}}
+r 不可以在 sudo 下使用，这也很合理，避免误操作。 \
+假如觉得方向键太远了可以使用。
+{{< /notice >}}
+
+### 清除屏幕
+
+`clear` 是个不错的选择，但或许用快捷键 ctrl + l 会更快
+
+### 不匹配文件
+
+有时候操作文件，跳过一些文件而不是选择一些文件可能更好，比如:
+```bash
+rm !(*.md|*.jpeg|*.jpg|*.png)
+```
+删除所有除了以 md, jpeg, jpg, png 结尾以外的所有文件
+
+## just for fun
+
+这里收集了一些好玩的，只是非常非常非常小的一部分，很多惊艳到我的都没记录下来。\
+这里记录的只是写此文时手机便签里留着的。
+
+### 笑脸
+
+输出所有的笑脸 [author: ichbins](https://www.commandlinefu.com/commands/by/ichbins)
+```bash
+printf "$(awk 'BEGIN{c=127;while(c++<191){printf("\xf0\x9f\x98\\%s",sprintf("%o",c));}}')"
+```
+原理是输出 "\xf0\x9f\x98\x80"(😀) 到 "\xf0\x9f\x98\xbe"(😾)。并用 awk 简化了一下，写成单行。
+
+### 进度条
+
+彩色进度条 [author: me](https://blog.nidhoggfgg.fun)
+```bash
+Ծ‸Ծ(){ sleep 0.1;printf '\e[15D';printf "\e[38;5;$2m";printf $1;: "${_:0-1:1}""${_:0:14}"; if [[ $2 -eq 256 ]]; then Ծ‸Ծ $_ 1; else Ծ‸Ծ $_ $[$2 + 1]; fi; }; printf '\e[?25l'; : echo  $(echo "4KLIDYUWQLRJNA7CS2COFFUF4KLINYUWQ7RJNCHCS2D6FFUG4KLILYUWQTRJNA7CS2BOFFUBBI======" | base32 -d);Ծ‸Ծ $_ 1
+```
+高中时无聊写的，逻辑上简单，但混淆上还是有一点功夫的。需要知道 [$_ 和 :]({{< ref "#_-与-" >}}) \
+这个实现确实过长了，还有很多很多很短的好，好玩的
+
+### 时钟
+
+右上角时钟 [author: glaudiston](https://www.commandlinefu.com/commands/by/glaudiston)
+```bash
+while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-29));date;tput rc;done &
+```
+这个相当厉害了，在终端的右上角挂一个时钟，具体的什么样的，一试便知。同样的，还可以发挥想象挂些其他的东西上去！ \
+但因为 UTC 的缘故，长度有变，更好的指令如下:
+```bash
+while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-36));date;tput rc;done &
+```
+
+### curl/telnet/ssh 合集
+
+一般都是一些没事干的家伙，又有闲着的服务器(我也)跑了一些 http server 专供好玩
+
+(awesome-console-services)[https://github.com/chubin/awesome-console-services] 收集了一大堆类似的，下面节选了一部分
+
+#### 看天气
+
+这个确实很惊艳了，主要是界面做得很好
+
+```bash
+curl wttr.in # 会自动获取地理位置
+curl wttr.in/haikou # 指定城市，比如 haikou
+curl v2.wttr.in # v2 版本，很像手机里的天气应用
+```
+
+#### 看动画
+
+```bash
+telnet towel.blinkenlights.nl # 星球大战
+telnet rya.nc 1987 # 你被骗了
+curl https://poptart.spinda.net # 彩虹猫
+```
+
+### 桌面环境
+
+非常离谱了，主要是看起来不像是终端的低分辨率，以及居然有背景透明和背景模糊！
+```bash
+ssh vtm@netxs.online
+```
+ssh 连接之后可能会很卡，网络和服务器资源都占了点原因，可以去[仓库地址](https://github.com/netxs-group/VTM)看看，非常之惊艳
