@@ -28,51 +28,11 @@ a
 
 ## 奇淫巧技
 
-### 模式扩展
-
-不使用 `pwd` 该如何获取当前所在目录呢，方法很多
-
-1. 使用 `$PWD` 变量[^1]
-2. 使用 `dirname $(readlink -f $0)` 这样的神奇的指令[^2]
-3. 使用 `readlink -f .` 等等[^3]
-
-[^1]: $PWD 永远指向当前目录，但 pwd 指令并不是单纯的输出 $PWD 变量.
-[^2]: $0 表示的是当前所使用的 shell 的可执行文件位置，但在 bash 中如果用 `readlink -f` 去读却会得到 `$PWD/bash`.
-但在 zsh 中会指向类似于 `/usr/bin/zsh` 这样的位置，取决于所使用的操作系统。
-[^3]: 每个目录都有两个特殊目录 . 和 ..，这也是为什么 `cd ..` 这样的指令能工作的原因.
-
-但是更加罕见的是 `echo ~+` 这种形式 \
-实际上这是 shell 的模式扩展（globbing），`~+` 默认扩展成当前目录，类似例子还有很多 \
-`~username` 扩展成 username 用户的主目录. 为空则默认为当前用户，这就是为什么 `~` 表示当前用户的主目录了 \
-众所周知 `*` 可以匹配除了点以外的任意字符多次，实际上开启一个参数后点也可以匹配到，比如
-
-```
-what@DESKTOP-EQ0RG58:~/a$ ls *
-test1:
-test3.txt  test4.txt
-
-test2:
-test5.txt  test6.txt
-what@DESKTOP-EQ0RG58:~/a$ shopt -s dotglob
-what@DESKTOP-EQ0RG58:~/a$ ls *
-.what
-
-test1:
-test3.txt  test4.txt
-
-test2:
-test5.txt  test6.txt
-
-.why:
-emmm
-```
-
-`{} []` 这些东西可以匹配字符，实际上开启了 `extglob` 之后还可以设置匹配的次数
+记录了一些奇奇怪怪的指令，操作等。较为实用的部分在[实用技巧]({{< ref "#实用技巧" >}})
 
 ### $_ 与 :
 
 bash圣经中的第一个代码示例如下:
-
 ```bash
 trim_string() {
     # Usage: trim_string "   example   string    "
@@ -81,15 +41,13 @@ trim_string() {
     printf '%s\n' "$_"
 }
 ```
-
 好家伙，一大堆的符号，但细看之下除了 `:` 与 `$_`，其他的都是对字符串进行操作 \
-`:` 表示的是不输出，将指令执行的结果不输出，存起来和`&`有点类似，不过它是完全不输出（stderr我不知道会不会输出），
-而 `&` 还是会输出命令完成之类的 \
-另外，`&` 准确来说是放到后台执行，而 `:` 就是直接执行 \
-`$_` 和其他脚本语言（ python 之类的）类似，表示上一个指令执行的结果[^4] \
+`:` 除了扩展后面的那一堆和重定向外，不会执行其他操作，这里的重定向包括输出到 stdout。[^1] \
+`$_` 和其他脚本语言 (python 之类的) 类似，表示上一个指令执行的结果[^2] \
 然后通过这两个东西就可以写出一些令人费解的代码，比如
 
-[^4]: 在诸如 python 的脚本语言中，`$_` 实际上是上一个表达式的值
+[^1]: 这意味着类似于 `: echo "e"` 是会执行的，而 `: mkdir a` 是不会执行的。
+[^2]: 在诸如 python 的脚本语言中，`_` 一般上是上一个表达式的值。
 
 ```bash
 Ծ‸Ծ(){
@@ -108,12 +66,51 @@ printf '\e[?25l'
 Ծ‸Ծ $_ 1
 ```
 
-实际上也比较好懂，就是类似于 `\e[?25l` 有些令人迷惑，这些是终端控制符.
+实际上也比较好懂，就是类似于 `\e[?25l` 有些令人迷惑，这些是终端控制符，可以在下文找到说明。
+
+### 模式扩展
+
+不使用 `pwd` 该如何获取当前所在目录呢，方法很多
+
+1. 使用 `$PWD` 变量[^3]
+2. 使用 `dirname $(readlink -f $0)` 这样的神奇的指令[^4]
+3. 使用 `readlink -f .` 等等[^5]
+
+[^3]: $PWD 永远指向当前目录，但 pwd 指令并不是单纯的输出 $PWD 变量。
+[^4]: $0 表示的是当前所使用的 shell 的可执行文件位置，但在 bash 中如果用 `readlink -f` 去读却会得到 `$PWD/bash`.
+但在 zsh 中会指向类似于 `/usr/bin/zsh` 这样的位置。
+[^5]: 每个目录都有两个特殊目录 . 和 ..，这也是为什么 `cd ..` 这样的指令能工作的原因。
+
+但是更加罕见的是 `echo ~+` 这种形式 \
+实际上这是 shell 的模式扩展(globbing)，`~+` 默认扩展成当前目录。 \
+类似例子还有很多，比如 `~username` 扩展成 username 用户的主目录。为空则默认为当前用户，这就是为什么 `~` 表示当前用户的主目录了。 \
+而众所周知 `*` 可以匹配除了点以外的任意字符多次，实际上开启 `dotglob` 后点也可以匹配到，比如
+```
+$ ls *
+test1:
+test3.txt  test4.txt
+
+test2:
+test5.txt  test6.txt
+$ shopt -s dotglob
+$ ls *
+.what
+
+test1:
+test3.txt  test4.txt
+
+test2:
+test5.txt  test6.txt
+
+.why:
+emmm
+```
+`{} []` 这些东西可以匹配字符，实际上开启了 `extglob` 之后还可以设置匹配的次数
 
 ### 终端控制符
 
 终端控制符与 shell 无关，能否显示与所使用的终端. \
-大部分终端控制符在 bash 中的转义字符如下:
+大部分常用的终端控制符在 bash 中的转义字符如下:
 
 |操作|说明|
 |-----|------|
@@ -164,26 +161,23 @@ printf '\e[?25l'
 
 ### !
 
-! 可以算是相当冷门了，但这个东西相当好玩，不妨试试以下指令
-
+`!` 这个东西相当好玩，不妨试试以下指令
 ```bash
 echo !#
 echo !!
 ```
 
 不出所料的话，应该是这样的输出
-
 ```
-what@DESKTOP-EQ0RG58:~/myblog$ echo !#
+$ echo !#
 echo echo
 echo
-what@DESKTOP-EQ0RG58:~/myblog$ echo !!
+$ echo !!
 echo echo echo
 echo echo
 ```
 
-是不是很神奇，这里包含了一个冷知识，也就是`!`开头的特殊变量（我把这东西称作变量应该是可以的）
-
+是不是很神奇，实际上可用的 `!` 操作如下:
 ```bash
 # 摘抄自 https://github.com/skywind3000/awesome-cheatsheets/blob/master/languages/bash.sh
 !!                  # 上一条命令
@@ -202,24 +196,23 @@ echo echo
 
 `echo -e` 可以开启输出转义，实际上另外一种方法却也是可以奏效的，那便是 `echo $'内容'` 这样的形式 \
 举个例子 `echo -e "\e[38;5;50m what's this"` 等价于 `echo $'\e[38;5;50m what\'s this'` \
-输出的都是一个蓝绿色的 `what's it`，显然后者写到脚本里更令人费解
+输出的都是一个蓝绿色的 `what's this`，显然后者写到脚本里更令人费解
 
-{{< notice wraning >}}
+{{< notice warning >}}
 不可以使用 $"s" 代替 $'s' ，此处单双引号不等价.
 {{< /notice >}}
 
 ### trap
 
 `trap` 在接收到指定的信号时，就会执行指定的指令 \
-首先 `trap -l` 可以看到所有信号
-
+首先 `trap -l` 可以看到所有信号，或者 `trap --list-signals`
 ```
-what@DESKTOP-EQ0RG58 ~/myblog> trap --list-signals
+$ trap --list-signals
 HUP INT QUIT ILL TRAP ABRT BUS FPE KILL USR1 SEGV USR2 PIPE ALRM TERM STKFLT
 CHLD CONT STOP TSTP TTIN TTOU URG XCPU XFSZ VTALRM PROF WINCH POLL PWR SYS
 ```
 
-其中 `INT` 表示 ctrl + c 时产生的信号，也可写成 SIGINT \
+其中 INT 表示 ctrl + c 时产生的信号，也可写成 SIGINT \
 EXIT 不管怎么样，只要退出就会产生 \
 那么搞事情的机会就来了，在脚本第一行加入如下指令，使用者不仅无法退出，还会在试图退出时看到"略略略":)
 
@@ -241,17 +234,42 @@ echo $LINENO
 不出所料输出为 3 \
 另外，有趣的是，在 REPL 环境中，也就是平时使用的命令行中这个变量也是存在的
 
+### 强制写入
+
+有时会遇到这样奇怪的情况:
+```
+$ echo m > test.txt
+bash: test.txt: cannot overwrite existing file
+```
+
+实际上这是因为开启了 noclobber 的缘故（默认是关闭的，但可能有些脚本开启了它） \
+我们固然可以关掉它，实际上还有一种解决方法，即使用 >| \
+它们之间唯一的区别就是你有权写入该文件的情况下， >| 一定会写入，不管设置了什么
+
+### 创建文件
+
+相比于 `touch` 用于创建一个空文件，`: >`[^6] 可能显得更加牛逼一些。 \
+更加丧心病狂的做法可能是 `: made_by_❤ > somefile` 去创建空的 `somefile` \
+或者更更更加丧心病狂使用类似于 `: rm -rf / > somefile` 这样的指令。
+
+{{< notice warning >}}
+此处的 `made_by_❤` 和 `rm -rf /` 并**不会**执行也不会写入到文件中，原因见 [$_ 和 :]({{< ref "#_-与-" >}}) \
+但请不要使用到可 globbing 的符号和重定向(最简单的做法就是不用英文符号)
+{{< /notice >}}
+
+[^6]: `: > abc.txt` 实际上等价于 `: "" > abc.txt` 也就是利用 `:` 执行 `"" > abc.txt`
+
 ## 实用技巧
 
 ### 快速编辑指令
 
-这个并不属于 bash 特有的，但也一并放在这里.
+这个并不属于 bash 特有的，但也一并放在这里(其实应该是终端提供的功能，但就算是在纯的 tty 也能用)。
 
-在敲指令的时候，有时候会发现忘记加 sudo 或者又是少了一个参数，但此时指令很长，按方向左键简直费时费力. \
+在敲指令的时候，有时候会发现忘记加 sudo 或者又是少了一个参数，但此时指令很长，按方向左键简直费时费力。 \
 那有没有好办法快速跳转到行首呢？ \
-当然有，按 ctrl a 就可以直接将光标放到行首， ctrl e 到行尾. \
-除此之外，还有很多快捷键可以使用，比如 ctrl 删除键 会以单词为单位删除. \
-至于其他的，实在是不太常用，可能不同的终端程序支持也不同，但这三个基本上都是支持的.
+当然有，按 ctrl a 就可以直接将光标放到行首， ctrl e 到行尾。 \
+除此之外，还有很多快捷键可以使用，比如 ctrl 删除键 会以单词为单位删除。 \
+至于其他的，不太常用。
 
 ### 目录记录
 
@@ -261,45 +279,30 @@ echo $LINENO
 等价于 `cd $OLDPWD`，但对 $OLDPWD 赋值并不会影响 `cd -`
 {{< /notice >}}
 
-对于 `cd -` ，只能回到上一次所在的目录，想要 bash 记录更多目录，可以使用 `pushd` 和 `popd`.
+对于 `cd -`，只能回到上一次所在的目录，想要 bash 记录更多目录，可以使用 `pushd` 和 `popd`(那么就不是高效操作了)。
 
 ### 快速文件操作
 
 有时候文件位于很深层的目录，这时候想去重命名的时候就显得非常麻烦了，指令大概类似于这样:
-
 ```bash
 mv content/post/abc/img/xyz.png content/post/abc/img/abc.png
 ```
 
-需要敲两遍路径，费时又费力. \
-利用 `cd -` 固然可以很快解决，但未免显得相当奇怪. \
+需要敲两遍路径，费时又费力。 \
+利用 `cd -` 固然可以很快解决，一步跳进目录再一步跳出，感觉还是差点意思。 \
 更好的解决办法:
-
 ```bash
 mv content/post/abc/img/{xyz,abc}.png
 ```
 
-当然，同样的方法可以利用在复制文件，修改后缀等等这些操作上，非常快.
-
-### 强制写入
-
-有时会遇到这样奇怪的情况:
-
-```
-what@DESKTOP-EQ0RG58:~/myblog$ echo m > test.txt
-bash: test.txt: cannot overwrite existing file
-```
-
-实际上这是因为开启了 noclobber 的缘故（默认是关闭的，但可能有些脚本开启了它） \
-我们固然可以关掉它，实际上还有一种解决方法，即使用 >| \
-它们之间唯一的区别就是你有权写入该文件的情况下， >| 一定会写入，不管设置了什么
+当然，同样的方法可以利用在复制文件，修改后缀等等这些操作上，非常好用。
 
 ### 读取 read 结果
 
 写 bash 脚本时，read 是很常用的指令. \
-但 read 有个极大的限制--会默认按照 $IFS 分割 \
-实际上非常有用的是 $REPLY 这个环境变量，它默认是上一次 read 所读取到的所有东西 \
-so，你可以按照你的想法来处理它而不是单一的靠 $IFS 之类的
+但 read 有个极大的限制 —— 会默认按照 $IFS 分割 \
+实际上可以使用 $REPLY 这个变量来处理 read 结果，它默认是上一次 read 所读取到的所有东西。 \
+接着就是简简单单的字符串处理了。
 
 ### shift
 
@@ -311,7 +314,7 @@ echo $@
 ```
 
 写入任意一个文件中，传入任意个参数，却只能得到除了第一个参数以外的所有参数，这是因为 `shift` 将原来的 $1 移除了，而原来的 $2 就成了 $1 \
-这样就可以处理完一个参数，然后 `shift` 掉，接着处理子参数， `shift` 掉...
+这样就可以处理完一个参数，然后 `shift` 掉，接着处理子参数，`shift` 掉...
 
 {{< notice tip >}}
 shift 可以多次调用，每次都是移除一个参数，也可以传入一个数字，控制移除的参数个数.
@@ -320,7 +323,7 @@ shift 可以多次调用，每次都是移除一个参数，也可以传入一�
 ### \>\>>
 
 日常使用中，很多都只是一个字符串，而有时候某个指令的参数是文件名，这种情况下该怎么办？ \
-将字符串写入文件再进行操作？这样好麻烦啊，实际上不用担心，因为有 <<< \
+将字符串写入文件再进行操作？这样好麻烦啊，实际上不用担心，因为有 <\<< \
 拿 md5sum 来说，它接受文件名作为参数，实际上使用 `md5sum <<< string` 即可
 
 {{< notice tip >}}
@@ -337,9 +340,10 @@ a='-l'
 ls $a
 ```
 
-事实上这种办法看起来没问题，但其实还是不行. 难道是没有办法输出 -l 目录下的文件的办法吗？ \
-非也，这里有一种参数终止的方法，其实说是参数终止并不完全正确，毕竟目标目录也是参数，不深究的话也无所谓. \
-使用 `ls -- -l` 就可以输出 -l 目录下的内容了.
+事实上这种办法看起来没问题，但其实还是不行。 \
+难道是没有办法输出 -l 目录下的文件的办法吗？ \
+非也，这里有一种参数终止的方法，使用 -\- 。 \
+使用 `ls -- -l` 就可以输出 -l 目录下的内容了。
 
 {{< notice tip >}}
 这个例子可能并不好，毕竟使用 `ls ./-l` 就好了. 但在其他情况下，会有用到的时候，比如目标不是一个文件. \
@@ -349,7 +353,7 @@ ls $a
 ### 快速上一条指令
 
 使用方向键来填充上一条指令是不错的选择。\
-拥有同样效果的还有 !! 和 r，使用起来也很方便。 \
+拥有同样效果的还有 !!，使用起来也很方便。 \
 比如:
 ```bash
 apt install vim # wrong! 非 root 用户无权执行
@@ -357,8 +361,7 @@ sudo !! # fine! 等价于 sudo apt install vim
 ```
 
 {{< notice tip >}}
-r 不可以在 sudo 下使用，这也很合理，避免误操作。 \
-假如觉得方向键太远了可以使用。
+在 zsh 中还有一个 r，但注意 `sudo r` 正常情况下不行，zsh 特有的。
 {{< /notice >}}
 
 ### 清除屏幕
@@ -369,22 +372,34 @@ r 不可以在 sudo 下使用，这也很合理，避免误操作。 \
 
 有时候操作文件，跳过一些文件而不是选择一些文件可能更好，比如:
 ```bash
-rm !(*.md|*.jpeg|*.jpg|*.png)
+rm !(*.md|*.jpeg|*.jpg|*.png|abc.txt)
 ```
-删除所有除了以 md, jpeg, jpg, png 结尾以外的所有文件
+删除所有除了以 md, jpeg, jpg, png 结尾以及 abc.txt 以外的所有文件
 
 ## just for fun
 
 这里收集了一些好玩的，只是非常非常非常小的一部分，很多惊艳到我的都没记录下来。\
 这里记录的只是写此文时手机便签里留着的。
 
-### 笑脸
+### 表情
 
 输出所有的笑脸 [author: ichbins](https://www.commandlinefu.com/commands/by/ichbins)
 ```bash
 printf "$(awk 'BEGIN{c=127;while(c++<191){printf("\xf0\x9f\x98\\%s",sprintf("%o",c));}}')"
 ```
-原理是输出 "\xf0\x9f\x98\x80"(😀) 到 "\xf0\x9f\x98\xbe"(😾)。并用 awk 简化了一下，写成单行。
+原理是输出 "\xf0\x9f\x98\x80"(😀) 到 "\xf0\x9f\x98\xbe"(😾)。并用 awk 简化了一下，写成单行。 \
+这也是不全的，比如在 U+1F910 到 U+1F917 也是笑脸，其他的还有。 \
+同样的，还可以输出小动物(改成了 16 进制，更加合理了)
+```bash
+printf "$(awk 'BEGIN{c=127;while(c++<174){printf("\xf0\x9f\xa6\\x%s",sprintf("%x",c));}}')"
+```
+或者伏羲六十四卦
+```bash
+printf "$(awk 'BEGIN{c=133;while(c++<191){printf("\xf0\x9d\x8c\\x%s",sprintf("%x",c));}}')"
+printf "$(awk 'BEGIN{c=127;while(c++<150){printf("\xf0\x9d\x8d\\x%s",sprintf("%x",c));}}')"
+```
+由于并不是连续的，为了简单就分成两条指令了。 \
+还可以输出一整套象形文字等等，翻 unicode 表就好了。
 
 ### 进度条
 
@@ -401,7 +416,8 @@ printf "$(awk 'BEGIN{c=127;while(c++<191){printf("\xf0\x9f\x98\\%s",sprintf("%o"
 ```bash
 while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-29));date;tput rc;done &
 ```
-这个相当厉害了，在终端的右上角挂一个时钟，具体的什么样的，一试便知。同样的，还可以发挥想象挂些其他的东西上去！ \
+这个相当厉害了，在终端的右上角挂一个时钟，具体的什么样的，一试便知。 \
+同样的，还可以发挥想象挂些其他的东西上去！ \
 但因为 UTC 的缘故，长度有变，更好的指令如下:
 ```bash
 while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-36));date;tput rc;done &
@@ -411,7 +427,7 @@ while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-36));date;tput rc;done &
 
 一般都是一些没事干的家伙，又有闲着的服务器(我也)跑了一些 http server 专供好玩
 
-(awesome-console-services)[https://github.com/chubin/awesome-console-services] 收集了一大堆类似的，下面节选了一部分
+[awesome-console-services](https://github.com/chubin/awesome-console-services) 收集了一大堆类似的，下面节选了一部分
 
 #### 看天气
 
