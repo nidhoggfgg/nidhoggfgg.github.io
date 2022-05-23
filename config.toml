@@ -1,6 +1,6 @@
 baseURL = "https://blog.nidhoggfgg.fun"
 languageCode = "zh-cn"
-title = "nidhoggfgg's blog"
+title = "nothing"
 theme = "moefox"
 Paginate = 5
 defaultContentLanguage = "zh-cn"
@@ -15,12 +15,12 @@ defaultContentLanguage = "zh-cn"
 [languages]
     [languages.en]
         languageName = "English"
-        title = ""
+        title = "nothing"
         weight = 2
 
     [languages.zh-cn]
         languageName = "中文"
-        title = ""
+        title = "nothing"
         weight = 1
 
 [markup.highlight]
