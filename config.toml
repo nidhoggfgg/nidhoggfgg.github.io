@@ -4,6 +4,7 @@ title = "nothing"
 theme = "moefox"
 Paginate = 5
 defaultContentLanguage = "zh-cn"
+enableGitInfo = true
 
 [permalinks]
     posts = "/post/:slug"
@@ -30,3 +31,6 @@ defaultContentLanguage = "zh-cn"
     tabWidth = 4
     guessSyntax = true
     noClasses = false
+
+[frontmatter]
+    lastmod = [':git', 'lastmod', ':fileModTime', ':default']
