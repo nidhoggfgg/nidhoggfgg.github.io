@@ -33,4 +33,4 @@ enableGitInfo = true
     noClasses = false
 
 [frontmatter]
-    lastmod = ['lastmod', ':fileModTime', ':default']
+    lastmod = ['lastmod', ':git', ':fileModTime', ':default']
