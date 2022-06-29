@@ -1,50 +1,41 @@
 ---
-title: "Systemd快速上手"
+title: "Systemd 快速上手"
 date: 2022-05-18T23:59:44+08:00
 draft: true
+lastmod: 2022-06-29
 slug: 1c920dec
 ---
 
-## 初识 systemd
+## 使用 systemd 的理由
 
-用 linux，看各种文档，教程的时候，比如类似于在《linux 上运行 mysql》这种，往往会看到:
+随着 systemd 生态越来越大，越来越多的 linux 发行版将 systemd 作为服务管理器，学习和使用 systemd 显得非常有必要了。况且 systemd 确实非常好用。
+
+对于一般人来说，systemd 主要是用来管理一些服务(service)。比如 mariadb 服务或者自己编写的 http server。同时还要保证这些服务在正确启动、失败重启等等。
+可能守护进程这个词会更加的常见一些，但实际上没什么区别，都是保证程序一直运行，失败重启。
+
+固然，对于简单的情况，比如一个简单的 python 脚本，利用诸如 tmux 之类的也可以做到类似的效果。 \
+但对于 mariadb 这种要求稳定、开机自启[^6]等的，就不太合适了，况且还有 NetworkManager、ufw 等一大堆的程序有着同样的要求，那么一个强大的服务管理程序就非常必要了
+
+[^1]: 当然有很多奇淫巧技同样可以只用 shell 做到，比如写到 .bashrc 里利用 `&` 或者 `：` 抑制输出，接着一直检测进程。但这同样有一大堆问题: 只有在启动 bash 之后才会启动、进程检测麻烦、输出并不会完全抑制、关闭重启等麻烦......
+
+systemd 虽不能说完美，但已经相当不错了，假如只是使用，简直就是简单到了极点，几条指令罢了。
+
+所以，使用 systemd 吧，有时候甚至是没有选择的，因为目前看来完全没有可以竞争的产品。
+
+## systemctl 简单了解
+
+systemd 最主要的指令是 `systemctl`，其他的我个人是不用的，官方的文档或者网上其他的文档对其他的指令会有介绍。 \
+systemctl 用于管理系统，关机重启休眠管理 cpu 等等，当然最重要的还是管理我们的服务。
+
+查看版本号:
 ```bash
-sudo systemctl start xxx
+$ systemctl --version
+systemd 251 (251.2-3-manjaro)
++PAM +AUDIT -SELINUX -APPARMOR -IMA +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT -QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK +XKBCOMMON +UTMP -SYSVINIT default-hierarchy=unified
 ```
-这个 systemctl 是何方神圣，为什么频繁的出现。
+输出会有很多，但底下的应该是一些编译时启用或者没有启用的特性，类似于 neovim 的那些特性，不必在乎。正常的输出证明着 systemctl 是可用的。
 
-其实 systemctl 就是 systemd 主要的命令，用于管理系统，比如:
-```bash
-sudo systemctl reboot # 重启系统
-```
-这看起来有点愚蠢，毕竟`sudo reboot`就好了，为什么需要 systemctl。 \
-这个倒是确实，但 systemctl 的功能可远不止这些。
+## 服务
 
-
-
-## 后记 --个人对 systemd 的看法
-
-说实在的，我接触 unix 系的时间并不算很长，大概也就 5 年吧，所以对于 init.d 了解非常浅。
-因此，仅仅只是对 systemd 的看法，而非一些比较什么的。
-
-首先是作为一个使用者，我可以算是完完全全的受益者，无需写任何的 unit 就能享受 systemd 带来的便利。
-几乎主流的发行版都采用了 systemd，并且主要的使用的 mysql，postgresql 这种软件包里也已经带有了 unit。
-可以说是，除了 enable 和 start 啥也不用管。
-因此我对 systemd 是看好的，用起来很爽，非常爽。
-
-但也有些不好的地方：
-1. 生态太大了
-2. unit 的编写真是一言难尽
-3. 出问题的时候，日志是真垃圾
-
-生态太大了有时候是一个很大的缺点，因为这会半强迫用户用他们的东西。\
-甚至更盛，搜索的内容全是 systemd，想找点其他的都找不到。 \
-systemd 用起来爽，但自己写 unit 是真的不爽，写个能用的 unit 当然容易，当有目录保护这样的需求的时候也还算好。
-但有时候有些得深入了解才能搞定就显得很麻烦了。 \
-日志很垃圾，这没得说，journalctl 是真不行，但也可能是我不会用，但我个人而言体验极差。
-三四次服务挂掉的时候，都是自己去看 unit 才解决问题。
-
-至于其他人所说的，作者写 systemd 初期的时候 bug 一大堆，经验不够丰富，全是抄袭什么的。\
-但说实在的，有几个人能像 linus 那样呢，不必过于苛责。
-
-总的来说，systemd 瑕不掩瑜，爽就完事了。
+对于一般的使用者来说，用得最多的应该就是启动一个服务了。比如启动 docker 这种。 \
+在安装了 docker 和 systemd 之后，一般就可以通过以下指令启动

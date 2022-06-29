@@ -4,7 +4,6 @@ title = "nothing"
 theme = "moefox"
 Paginate = 5
 defaultContentLanguage = "zh-cn"
-enableGitInfo = true
 
 [permalinks]
     posts = "/post/:slug"
