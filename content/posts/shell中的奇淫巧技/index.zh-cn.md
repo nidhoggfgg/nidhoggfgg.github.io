@@ -9,10 +9,10 @@ slug: 8ca21edd
 ## 前言
 
 本文所有内容均在 bash 下进行，在没有特殊说明的情况下 shell 都是指 bash。 \
-一部分内容在 zsh 不起作用 (不起作用时会指出) \
+一部分内容在 zsh 中会有差异 (存在差异时会指出) \
 其中尽可能是 shell 的功能，而非某一个软件包所实现的功能 \
 本文的内容默认读者对 shell 已经有一定了解，诸如 `$?` 或者 `##` 这些的含义本文不会赘述。 \
-对于对 shell 不太了解的读者，只希望了解一点点实用技巧，可以阅读 [实用技巧]({{< ref "#实用技巧" >}})
+对于对 shell 不太了解的读者，只希望了解一点点实用技巧，可以阅读 [实用技巧]({{< ref "#实用技巧" >}}) \
 
 ## 奇淫巧技
 
@@ -68,7 +68,7 @@ printf '\e[?25l'
 3. 使用 `readlink -f .` 等等[^5]
 
 [^3]: `$PWD` 永远指向当前目录，但 `pwd` 指令并不是单纯的输出 `$PWD` 变量。
-[^4]: `$0` 表示的是当前所使用的 shell 的可执行文件位置，但在 bash 中如果用 `readlink -f` 去读却会得到 `$PWD/bash`。
+[^4]: `$0` 表示的是当前所使用的 shell 的可执行文件位置。在 bash 中如果用 `readlink -f` 去读却会得到 `$PWD/bash`。
 但在 zsh 中会指向类似于 `/usr/bin/zsh` 这样的位置。
 [^5]: 每个目录都有两个特殊目录 `.` 和 `..`，这也是为什么 `cd ..` 这样的指令能工作的原因。
 
@@ -326,9 +326,11 @@ mv content/post/abc/img/{xyz,abc}.png
 ### 读取 read 结果
 
 写 bash 脚本时，read 是很常用的指令。 \
-但 read 有个极大的限制 —— 会默认按照 $IFS 分割 \
-实际上可以使用 $REPLY 这个变量来处理 read 结果，它默认是上一次 read 所读取到的所有东西。 \
+但 read 有个极大的限制 —— 会默认按照 `$IFS` 分割 \
+实际上可以使用 $REPLY 这个变量来处理 read 结果，它默认是上一次 read 所读取到的所有东西。 [^7]\
 接着就是简简单单的字符串处理了。
+
+[^7]: read 仍然受单行所限制，即 `cat some | {read; echo $REPLY }` 只能得到 some 中第一行的内容
 
 ### shift
 
@@ -391,6 +393,54 @@ sudo !! # fine! 等价于 sudo apt install vim
 在 zsh 中还有一个 r，但注意 `sudo r` 正常情况下不行，zsh 特有的。
 {{< /notice >}}
 
+### 快速修改上一条指令
+
+在敲击命令中的过程中错误是很常见的事情，也有很多解决办法：zsh 的插件纠正， thefuck...... \
+但其实无需其他的任何的程序，bash 中已经提供了一个 `^` \
+比如，想要敲击 `sudo apt install vim` 但是敲成了 `sudi apt install vim`，bash 很直接地告诉我们指令错了。 \
+那么此时只须执行 `^i^o`(意思是将第一个 i 替换为 o) 即可直接执行正确的指令:
+```
+$ sudi pacman -Syyu
+bash: sudi：未找到命令
+$ ^i^o
+sudo pacman -Syyu
+[sudo] nidhoggfgg 的密码：
+```
+
+### 快速粘贴参数
+
+对于如下例子:
+```
+$ ls projects/fpig/fp/vm/src/
+chunk.rs  lib.rs  object.rs  op.rs
+$ cd projects/fpig/fp/vm/src/
+```
+其中需要两次敲击 `projects/fpig/fp/vm/src`，这需要敲很多键。 \
+当然，可以利用前文所述的快速编辑，但仍然显得很麻烦。 \
+实际上第二个路径不需要敲，只需要敲完 `cd ` 之后按下 `Alt + .` 就可以自动粘贴上一条指令的参数！ \
+也就是:
+```
+$ ls projects/fpig/fp/vm/src/
+chunk.rs  lib.rs  object.rs  op.rs
+$ cd <Alt + .>
+```
+就可以直接自动补全了。
+
+{{< notice tip >}} 这个例子或许不是很恰当，毕竟可以使用上述的小技巧 `^ls^cd` 一步完成 {{< /notice >}}
+
+### CDPATH
+
+`CDPATH` 是一个特殊的环境变量，类似于 `PATH`，比如:
+```
+$echo $CDPATH
+:/home/nidhoggfgg/projects
+$cd fpig
+$pwd
+/home/nidhoggfgg/projects/fpig
+```
+第二步使用 `cd fpig` 就直接跳入了 `/home/nidhoggfgg/projects/fpig`，可以极大的节省时间。 \
+建议填入常用的目录然后写入 ~/.zshrc 或者 ~/.bashrc
+
 ### 清除屏幕
 
 `clear` 是个不错的选择，但或许用快捷键 ctrl + l 会更快
@@ -401,7 +451,8 @@ sudo !! # fine! 等价于 sudo apt install vim
 ```bash
 rm !(*.md|*.jpeg|*.jpg|*.png|abc.txt)
 ```
-删除所有除了以 md, jpeg, jpg, png 结尾以及 abc.txt 以外的所有文件
+删除所有除了以 md, jpeg, jpg, png 结尾以及 abc.txt 以外的所有文件。 \
+在 zsh 中无效，在 bash 中需要开启 `extglob`，即需要 `shopt -s extglob`
 
 ### 不保留历史记录
 
@@ -416,10 +467,31 @@ rm !(*.md|*.jpeg|*.jpg|*.png|abc.txt)
 
 还有很多通过操纵 history 来实现同样或者更强的效果的，用处不大此处不再赘述。
 
+### cheatsheet
+
+忘记命令的参数用法的事常有，但往往 `--help` 一大堆的输出里不能很快地找到需要的，更别说 `man` 动辄几十上百页的说明了。\
+其实有一种更加简单的方式就是使用 cheatsheet 了。\
+对于最轻量的使用方法，不用安装程序的就是使用 `curl` 了，比如:
+```bash
+curl cheat.sh/ls
+```
+将以下几行添加到 `~/.zshrc` 或者 `~/.bashrc` 会很有用:
+```bash
+how() {
+    curl cheat.sh/$1
+}
+```
+之后就可以使用 `how` 来查询不知道的指令的使用方法了。
+
+### 查看系统及硬件信息
+
+`lscpu`, `free`, `lsblk` 分别可以查看 cpu，内存，硬盘信息，他们的使用方法可以使用上述的 `how` 函数查询。 \
+`/etc/issue` 里存储了 linux 发行版的名字，比如 `Manjaro Linux`
+
 ## just for fun
 
 这里收集了一些好玩的，只是非常非常非常小的一部分，很多惊艳到我的都没记录下来。\
-这里记录的只是写此文时手机便签里留着的，以及我自己写的一部分。
+有一部分指令可能有一定的实用价值。
 
 ### 表情
 
@@ -457,20 +529,75 @@ while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-29));date;tput rc;done &
 ```
 这个相当厉害了，在终端的右上角挂一个时钟，具体的什么样的，一试便知。 \
 同样的，还可以发挥想象挂些其他的东西上去！ \
-但因为 UTC 的缘故，长度有变，更好的指令如下:
+但因为 UTC 的缘故，长度有变，更好的指令如下 (将原作者的指令中的 29 改成 36):
 ```bash
 while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-36));date;tput rc;done &
 ```
 
+但不过值得注意的是，由于反复 `sleep` 会导致系统不断分配新的 `pid`。在一般情况下，`pid` 会一直自增，这会导致后续进程的 `pid` 非常大。
+
+### 查看目录磁盘使用量
+
+可以很方便地在命令行下查看磁盘使用量 [author: x3mboy](https://www.commandlinefu.com/commands/by/x3mboy)
+```bash
+du --max-depth=1 -h . | sort -rh
+```
+用 `du` 查看，`sort` 排序
+
+*和原作者不同，我添加了 `-r` 参数表示逆序 (从大到小)*
+
+### 以表的形式查看文件
+
+![table](imgs/5520cb.png)
+
+将长字符串分割并添加头部 [author: wuseman1](https://www.commandlinefu.com/commands/by/wuseman1)
+```bash
+column -s: -t -n . -N USERNAME,PASS,UID,GID,NAME,HOMEDIR,SHELL -T NAME /etc/passwd|sed "1,2 i $(printf %80s|tr ' ' '=')"
+```
+如果只想阅读前几行或者前一部分，可以利用 `head -n x`
+
+更多的，还可以阅读 csv 文件，比如:
+```bash
+column -s, -t xxx.csv | head -n 5 | tail -n +1 |sed "1,2 i $(printf %80s|tr ' ' '=')"
+```
+其中的 `tail -n +1` 是必须的，`head -n 5` 则是为了查看前 4 行 (标题也算一行)，`-s,` 是因为 csv 文件中的字段按照 `,` 分割
+
+### 摄像头
+
+在 linux 中使用摄像头其实不是一件难事，最简单的办法只需要:
+```bash
+mplayer tv://
+```
+或者更多的，安装了 `libcaca` 的话，还可以用 caca 像素画:
+```bash
+mplayer tv:// -vo caca
+```
+
+### 使 bash 崩溃
+
+注意，我的用词是崩溃不是错误！ \
+使用以下指令，可以直接使 bash 崩溃:
+```bash
+enable -f /usr/lib/libpng.so png_create_read
+```
+看起来完全人畜无害 \
+这不算什么，但是假如更加恶毒一点:
+```bash
+echo "enable -f /usr/lib/libpng.so png_create_read" >> ~/.bashrc
+```
+那么用户启动 bash 的时候就会崩溃！对于新手，他将毫无头绪也不知道怎么解决问题！:)
+
 ### curl/telnet/ssh 合集
 
-一般都是一些没事干的家伙，又有闲着的服务器 (我也) 跑了一些 http server 专供好玩
+一般都是一些没事干的家伙，又有闲着的服务器 (我也) 跑了一些服务专供好玩
 
 [awesome-console-services](https://github.com/chubin/awesome-console-services) 收集了一大堆类似的，下面节选了一部分
 
 #### 看天气
 
 这个确实很惊艳了，主要是界面做得很好
+
+![wttr.in](imgs/96b0faf.png)
 
 ```bash
 curl wttr.in # 会自动获取地理位置
@@ -485,6 +612,10 @@ telnet towel.blinkenlights.nl # 星球大战
 telnet rya.nc 1987 # 你被骗了
 curl https://poptart.spinda.net # 彩虹猫
 ```
+
+![nyancat](imgs/8b1eb3.png)
+
+在一般常用的 linux 发行版上可以找到一个名为 `nyancat` 的包，这个也是彩虹猫。
 
 #### 桌面环境
 
