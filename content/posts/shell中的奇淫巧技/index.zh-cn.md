@@ -2,7 +2,7 @@
 title: "Shell中的奇淫巧技"
 date: 2022-05-07T21:33:59+08:00
 draft: false
-lastmod: 2022-06-29
+lastmod: 2022-09-11
 slug: 8ca21edd
 ---
 
