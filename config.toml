@@ -31,5 +31,10 @@ defaultContentLanguage = "zh-cn"
     guessSyntax = true
     noClasses = false
 
+[markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4
+    ordered = true
+
 [frontmatter]
     lastmod = ['lastmod', ':git', ':fileModTime', ':default']
