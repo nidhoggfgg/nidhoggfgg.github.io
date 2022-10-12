@@ -11,7 +11,11 @@ enableGitInfo = true
     page = "/:slug"
 
 [params]
-    mainSections = ["posts", "docs"]
+    mainSections = ["posts"]
+
+    [params.article]
+        copyBtn = true
+        math = true
 
 [languages]
     [languages.en]
