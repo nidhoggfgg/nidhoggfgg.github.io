@@ -5,6 +5,8 @@ theme = "moefox"
 Paginate = 5
 defaultContentLanguage = "zh-cn"
 enableGitInfo = true
+pygmentsUseClasses=true
+pygmentsCodeFences=true
 
 [permalinks]
     posts = "/post/:slug"
@@ -29,10 +31,8 @@ enableGitInfo = true
         weight = 1
 
 [markup.highlight]
-    style = "dracula"
-    lineNos = true
-    lineNumbersInTable = true
-    tabWidth = 4
+    style = "monokai"
+    lineNos = false # if need use hl_lines it cant be true
     guessSyntax = true
     noClasses = false
 
@@ -40,6 +40,9 @@ enableGitInfo = true
     startLevel = 2
     endLevel = 4
     ordered = true
+
+[markup.goldmark.renderer]
+    unsafe = true # for using html in markdown
 
 [frontmatter]
     lastmod = [':git', 'lastmod', ':fileModTime', ':default']
