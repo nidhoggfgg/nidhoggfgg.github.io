@@ -4,6 +4,8 @@ date: 2022-05-18T23:59:57+08:00
 draft: false
 lastmod: 2022-06-29
 slug: da968c3a
+categories:
+    - linux
 ---
 
 ## 为什么要使用防火墙
