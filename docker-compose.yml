@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  hugo_server:
+    build:
+      context: .
+    ports:
+      - "1313:1313"
+    volumes:
+      - ".:/blog"
+    command: "server"
